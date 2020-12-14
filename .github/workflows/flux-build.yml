@@ -1,0 +1,61 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "flux"
+  flux:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - shell: bash
+        env:
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          DOCKER_IMAGE: ${{ secrets.DOCKER_IMAGE }}
+          DOCKER_TARGET: ${{ secrets.DOCKER_TARGET }}
+          FLUX_TOKEN: ${{ secrets.FLUX_TOKEN }}
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          DEMO_USERNAME: ${{ secrets.USERNAME }}
+          FLUX_URL: ${{ secrets.FLUX_URL }}
+          EMAIL: ${{ secrets.EMAIL }}
+          GIT_REPO: ${{ secrets.GIT_REPO }}
+        run: |
+          curl --request POST \
+           --url $FLUX_URL \
+           --header "Authorization: Bearer $FLUX_TOKEN" \
+           --header 'Content-Type: application/json' \
+           --data "{
+             \"specversion\" : \"1.0\",
+             \"type\" : \"commitTrigger\",
+             \"source\" : \"githubActions\",
+             \"subject\" : \"123\",
+             \"id\" : \"A234-1234-1234\",
+             \"time\" : \"2018-04-05T17:31:00Z\",
+             \"datacontenttype\" : \"application/json\",
+             \"data\" : {
+                \"repo\": \"$GIT_REPO\",
+                \"login\": \"$DEMO_USERNAME\",
+                \"token\": \"$DOCKER_TOKEN\",
+                \"image\": \"$DOCKER_IMAGE\",
+                \"target\": \"$DOCKER_TARGET\",
+                \"email\": \"$EMAIL\",
+                \"project\": \"$GCP_PROJECT\"
+             }
+           }"  
